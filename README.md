@@ -1,6 +1,6 @@
-# MAX31328 Arduino Driver
+# MAX31329 Arduino Driver
 
-This project includes arduino driver and usecase examples for [MAX31328](https://datasheets.maximintegrated.com/en/ds/MAX31328.pdf) RTC sensor.
+This project includes arduino driver and usecase examples for [MAX31329](https://datasheets.maximintegrated.com/en/ds/MAX31329.pdf) RTC sensor.
 
 
 ## License and contributions

@@ -32,8 +32,8 @@
 */
 
 
-#ifndef MAX31328_H
-#define MAX31328_H
+#ifndef MAX31329_H
+#define MAX31329_H
 
 
 #include "Arduino.h"
@@ -42,7 +42,7 @@
 #include <stdarg.h>
 
 
-#define MAX31328_I2C_ADRS 0x68 
+#define MAX31329_I2C_ADRS 0x68 
 #define I2C_WRITE 0
 #define I2C_READ  1
 
@@ -51,26 +51,31 @@
 #define DY_DT     (1 << 6)
 #define ALRM_MASK (1 << 7)
 
-//control register bit masks
-#define A1IE  (1 << 0)
-#define A2IE  (1 << 1)
-#define INTCN (1 << 2)
-#define RS1   (1 << 3)
-#define RS2   (1 << 4)
-#define CONV  (1 << 5)
-#define BBSQW (1 << 6)
-#define EOSC  (1 << 7)
+// CONFIG register bit masks
+// CONFIG1
+#define ENOSC       (1 << 0)
+#define I2C_TIMEOUT (1 << 1)
+#define DATA_RET    (1 << 2)
+#define EN_IO       (1 << 3)
+// CONFIG2
+#define CLKINHZ     3
+#define ENCLKIN     (1 << 3)
+#define DIP         (1 << 4)
+#define CLKO_HZ     (3 << 5)
 
-//status register bit masks
+// STATUS register bit masks
 #define A1F     (1 << 0)
 #define A2F     (1 << 1)
-#define BSY     (1 << 2)
-#define EN32KHZ (1 << 3)
-#define OSF     (1 << 7)
+#define TIF     (1 << 2)
+#define DIF     (1 << 3)
+#define LOS     (1 << 4)
+#define PFAIL   (1 << 5)
+#define OSF     (1 << 6)
+#define PSDECT  (1 << 7)
   
 
 /**
-* max31328_time_t - Struct for containing time data.
+* max31329_time_t - Struct for containing time data.
 * 
 * Members:
 *
@@ -91,11 +96,11 @@ typedef struct
     uint32_t hours; 
     bool am_pm; 
     bool mode; 
-}max31328_time_t;
+}max31329_time_t;
 
 
 /**
-* max31328_calendar_t - Struct for containing calendar data.
+* max31329_calendar_t - Struct for containing calendar data.
 * 
 * Members:
 *
@@ -113,11 +118,11 @@ typedef struct
     uint32_t date; 
     uint32_t month; 
     uint32_t year;
-}max31328_calendar_t;
+}max31329_calendar_t;
 
 
 /**
-* max31328_alrm_t - Struct for containing alarm data.
+* max31329_alrm_t - Struct for containing alarm data.
 * 
 * Members:
 *
@@ -160,11 +165,11 @@ typedef struct
     bool am_pm; 
     bool mode; 
     bool dy_dt;
-}max31328_alrm_t;
+}max31329_alrm_t;
 
 
 /**
-* max31328_cntl_stat_t - Struct for containing control and status 
+* max31329_cntl_stat_t - Struct for containing control and status 
 * register data.
 * 
 * Members:
@@ -177,15 +182,15 @@ typedef struct
 {
     uint8_t control; 
     uint8_t status; 
-}max31328_cntl_stat_t;
+}max31329_cntl_stat_t;
         
                 
 /******************************************************************//**
-* Max31328 Class
+* Max31329 Class
 **********************************************************************/
-class Max31328
+class Max31329
 {
-    uint8_t w_adrs = MAX31328_I2C_ADRS, r_adrs = MAX31328_I2C_ADRS;
+    uint8_t w_adrs = MAX31329_I2C_ADRS, r_adrs = MAX31329_I2C_ADRS;
 
     TwoWire *i2c;
 
@@ -248,34 +253,41 @@ class Max31328
     public:
     
         /**
-        * max31328_regs_t - enumerated MAX31328 registers 
+        * max31329_regs_t - enumerated MAX31329 registers 
         */
         typedef enum
         {
-            SECONDS,
-            MINUTES,
-            HOURS,
-            DAY,
-            DATE,
-            MONTH,
-            YEAR,
-            ALRM1_SECONDS,
-            ALRM1_MINUTES,
-            ALRM1_HOURS,
-            ALRM1_DAY_DATE,
-            ALRM2_MINUTES,
-            ALRM2_HOURS,
-            ALRM2_DAY_DATE,
-            CONTROL,
-            STATUS,
-            AGING_OFFSET, //don't touch this register
-            MSB_TEMP,
-            LSB_TEMP
-        }max31328_regs_t;
+            STATUS,         // 0x00
+            INT_EN,         // 0x01
+            RTC_RESET,      // 0x02
+            RTC_CONFIG1,    // 0x03
+            RTC_CONFIG2,    // 0x04
+            TIMER_CONFIG,   // 0x05
+            SECONDS,        // 0x06
+            MINUTES,        // 0x07
+            HOURS,          // 0x08 
+            DAY,            // 0x09
+            DATE,           // 0x0A
+            MONTH,          // 0x0B
+            YEAR,           // 0x0C
+            ALM1_SEC,       // 0x0D
+            ALM1_MIN,       // 0x0E
+            ALM1_HRS,       // 0x0F
+            ALM1_DAY_DATE,  // 0x10
+            ALM1_MON,       // 0x11
+            ALM1_YEAR,      // 0x12
+            ALM2_MIN,       // 0x13
+            ALM2_HRS,       // 0x14
+            ALM2_DAY_DATE,  // 0x15
+            TIMER_COUNT,    // 0x16
+            TIMER_INIT,     // 0x17
+            PWR_MGMT,       // 0x18
+            TRICKLE_REG     // 0x19
+        }max31329_regs_t;
     
         
         /**********************************************************//**
-        * Constructor for Max31328 Class
+        * Constructor for Max31329 Class
         *
         * On Entry:
         *     @param[in] i2c Pointer to I2C bus object for this device.
@@ -287,15 +299,15 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         *
         * @endcode
         **************************************************************/
-        Max31328(TwoWire *i2c);
+        Max31329(TwoWire *i2c);
         
         
         /**********************************************************//**
-        * Sets the time on MAX31328
+        * Sets the time on MAX31329
         * Struct data is in integrer format, not BCD.  Fx will convert
         * to BCD for you.
         *
@@ -309,21 +321,21 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * //time = 12:00:00 AM 12hr mode
-        * max31328_time_t time = {12, 0, 0, 0, 1}
+        * max31329_time_t time = {12, 0, 0, 0, 1}
         * uint16_t rtn_val;
         *
         * rtn_val = rtc.set_time(time);
         *
         * @endcode
         **************************************************************/
-        uint16_t set_time(max31328_time_t time);
+        uint16_t set_time(max31329_time_t time);
         
         
         /**********************************************************//**
-        * Sets the calendar on MAX31328
+        * Sets the calendar on MAX31329
         *
         * On Entry:
         *     @param[in] calendar - struct cotaining calendar data 
@@ -335,21 +347,21 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * //see datasheet for calendar format
-        * max31328_calendar_t calendar = {1, 1, 1, 0}; 
+        * max31329_calendar_t calendar = {1, 1, 1, 0}; 
         * uint16_t rtn_val;
         *
         * rtn_val = rtc.set_calendar(calendar);
         *
         * @endcode
         **************************************************************/
-        uint16_t set_calendar(max31328_calendar_t calendar);
+        uint16_t set_calendar(max31329_calendar_t calendar);
         
         
         /**********************************************************//**
-        * Set either Alarm1 or Alarm2 of MAX31328
+        * Set either Alarm1 or Alarm2 of MAX31329
         *
         * On Entry:
         *     @param[in] alarm - struct cotaining alarm data 
@@ -364,21 +376,21 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
-        * //see max31328.h for .members and datasheet for alarm format
-        * max31328_alrm_t alarm; 
+        * //see max31329.h for .members and datasheet for alarm format
+        * max31329_alrm_t alarm; 
         * uint16_t rtn_val;
         *
         * rtn_val = rtc.set_alarm(alarm, FALSE);
         *
         * @endcode
         **************************************************************/
-        uint16_t set_alarm(max31328_alrm_t alarm, bool one_r_two);
+        uint16_t set_alarm(max31329_alrm_t alarm, bool one_r_two);
         
         
         /**********************************************************//**
-        * Set control and status registers of MAX31328
+        * Set control and status registers of MAX31329
         *
         * On Entry:
         *     @param[in] data - Struct containing control and status 
@@ -391,20 +403,20 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * //do not use 0xAA, see datasheet for appropriate data 
-        * max31328_cntl_stat_t data = {0xAA, 0xAA}; 
+        * max31329_cntl_stat_t data = {0xAA, 0xAA}; 
         *
         * rtn_val = rtc.set_cntl_stat_reg(data);
         *
         * @endcode
         **************************************************************/
-        uint16_t set_cntl_stat_reg(max31328_cntl_stat_t data);
+        uint16_t set_cntl_stat_reg(max31329_cntl_stat_t data);
         
         
         /**********************************************************//**
-        * Gets the time on MAX31328
+        * Gets the time on MAX31329
         *
         * On Entry:
         *     @param[in] time - pointer to struct for storing time data
@@ -418,21 +430,21 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * //time = 12:00:00 AM 12hr mode
-        * max31328_time_t time = {12, 0, 0, 0, 1} 
+        * max31329_time_t time = {12, 0, 0, 0, 1} 
         * uint16_t rtn_val;
         *
         * rtn_val = rtc.get_time(&time);
         *
         * @endcode
         **************************************************************/
-        uint16_t get_time(max31328_time_t* time);
+        uint16_t get_time(max31329_time_t* time);
         
         
         /**********************************************************//**
-        * Gets the calendar on MAX31328
+        * Gets the calendar on MAX31329
         *
         * On Entry:
         *     @param[in] calendar - pointer to struct for storing 
@@ -447,21 +459,21 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * //see datasheet for calendar format
-        * max31328_calendar_t calendar = {1, 1, 1, 0}; 
+        * max31329_calendar_t calendar = {1, 1, 1, 0}; 
         * uint16_t rtn_val;
         *
         * rtn_val = rtc.get_calendar(&calendar);
         *
         * @endcode
         **************************************************************/
-        uint16_t get_calendar(max31328_calendar_t* calendar);
+        uint16_t get_calendar(max31329_calendar_t* calendar);
         
         
         /**********************************************************//**
-        * Get either Alarm1 or Alarm2 of MAX31328
+        * Get either Alarm1 or Alarm2 of MAX31329
         *
         * On Entry:
         *     @param[in] alarm - pointer to struct for storing alarm 
@@ -478,21 +490,21 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
-        * //see max31328.h for .members and datasheet for alarm format
-        * max31328_alrm_t alarm; 
+        * //see max31329.h for .members and datasheet for alarm format
+        * max31329_alrm_t alarm; 
         * uint16_t rtn_val;
         *
         * rtn_val = rtc.get_alarm(&alarm, FALSE);
         *
         * @endcode
         **************************************************************/
-        uint16_t get_alarm(max31328_alrm_t* alarm, bool one_r_two);
+        uint16_t get_alarm(max31329_alrm_t* alarm, bool one_r_two);
         
         
         /**********************************************************//**
-        * Get control and status registers of MAX31328
+        * Get control and status registers of MAX31329
         *
         * On Entry:
         *     @param[in] data - pointer to struct for storing control 
@@ -507,20 +519,20 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * //do not use 0xAA, see datasheet for appropriate data 
-        * max31328_cntl_stat_t data = {0xAA, 0xAA}; 
+        * max31329_cntl_stat_t data = {0xAA, 0xAA}; 
         *
         * rtn_val = rtc.get_cntl_stat_reg(&data);
         *
         * @endcode
         **************************************************************/
-        uint16_t get_cntl_stat_reg(max31328_cntl_stat_t* data);
+        uint16_t get_cntl_stat_reg(max31329_cntl_stat_t* data);
         
         
         /**********************************************************//**
-        * Get temperature data of MAX31328
+        * Get temperature data of MAX31329
         *
         * On Entry:
         *
@@ -531,7 +543,7 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * uint16_t temp; 
         *
@@ -544,7 +556,7 @@ class Max31328
         
         /**********************************************************//**
         * Get epoch time based on current RTC time and date.  
-        * MAX31328 must be configured and running before this fx is 
+        * MAX31329 must be configured and running before this fx is 
         * called
         *
         * On Entry:
@@ -556,7 +568,7 @@ class Max31328
         * @code
         * 
         * //instantiate rtc object
-        * Max31328 rtc(&Wire); 
+        * Max31329 rtc(&Wire); 
         * 
         * uint32_t epoch_time; 
         *
@@ -567,4 +579,4 @@ class Max31328
         time_t get_epoch(void);
         
 };
-#endif /* MAX31328_H*/
+#endif /* MAX31329_H*/
