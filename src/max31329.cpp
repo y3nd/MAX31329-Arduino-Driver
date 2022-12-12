@@ -32,13 +32,13 @@
 */
 
 
-#include "max31328.h"
+#include "max31329.h"
 
 
-#define pr_err(msg) Serial.println("max31328.cpp: " msg)
+#define pr_err(msg) Serial.println("max31329.cpp: " msg)
 
 /**********************************************************//**
-* Constructor for Max31328 Class
+* Constructor for Max31329 Class
 *
 * On Entry:
 *     @param[in] i2c Pointer to I2C bus object for this device.
@@ -50,11 +50,11 @@
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 *
 * @endcode
 **************************************************************/
-Max31328::Max31328(TwoWire *i2c)
+Max31329::Max31329(TwoWire *i2c)
 {
   if (i2c == NULL) {
     pr_err("i2c object is invalid!");
@@ -65,11 +65,11 @@ Max31328::Max31328(TwoWire *i2c)
   this->i2c->begin();
 }
 
-int Max31328::write(int address, const char *data, int length){
+int Max31329::write(int address, const char *data, int length){
   int ret;
 
   i2c->beginTransmission(address);
-  i2c->write(data,length);
+  i2c->write((const uint8_t*)data,length);
   ret = i2c->endTransmission();
 
   if (ret != 0) {
@@ -79,7 +79,7 @@ int Max31328::write(int address, const char *data, int length){
   return ret;
 }
 
-int Max31328::read(int address, char *data, int length){
+int Max31329::read(int address, char *data, int length){
   int counter = 0;
 
   i2c->requestFrom(address, length);
@@ -97,7 +97,7 @@ int Max31328::read(int address, char *data, int length){
 }
 
 /**********************************************************//**
-* Sets the time on MAX31328
+* Sets the time on MAX31329
 * Struct data is in integer format, not BCD.  Fx will convert
 * to BCD for you.
 *
@@ -111,17 +111,17 @@ int Max31328::read(int address, char *data, int length){
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
 * //time = 12:00:00 AM 12hr mode
-* max31328_time_t time = {12, 0, 0, 0, 1}
+* max31329_time_t time = {12, 0, 0, 0, 1}
 * uint16_t rtn_val;
 *
 * rtn_val = rtc.set_time(time);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::set_time(max31328_time_t time)
+uint16_t Max31329::set_time(max31329_time_t time)
 {
     uint8_t data[] = {0,0,0,0};
     uint8_t data_length = 0;
@@ -163,7 +163,7 @@ uint16_t Max31328::set_time(max31328_time_t time)
 
 
 /**********************************************************//**
-* Sets the calendar on MAX31328
+* Sets the calendar on MAX31329
 *
 * On Entry:
 *     @param[in] calendar - struct cotaining calendar data 
@@ -175,17 +175,17 @@ uint16_t Max31328::set_time(max31328_time_t time)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
 * //see datasheet for calendar format
-* max31328_calendar_t calendar = {1, 1, 1, 0}; 
+* max31329_calendar_t calendar = {1, 1, 1, 0}; 
 * uint16_t rtn_val;
 *
 * rtn_val = rtc.set_calendar(calendar);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::set_calendar(max31328_calendar_t calendar)
+uint16_t Max31329::set_calendar(max31329_calendar_t calendar)
 {
     uint8_t data[] = {0,0,0,0,0};
     uint8_t data_length = 0;
@@ -212,7 +212,7 @@ uint16_t Max31328::set_calendar(max31328_calendar_t calendar)
 
 
 /**********************************************************//**
-* Set either Alarm1 or Alarm2 of MAX31328
+* Set either Alarm1 or Alarm2 of MAX31329
 *
 * On Entry:
 *     @param[in] alarm - struct cotaining alarm data 
@@ -227,17 +227,17 @@ uint16_t Max31328::set_calendar(max31328_calendar_t calendar)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
-* //see max31328.h for .members and datasheet for alarm format
-* max31328_alrm_t alarm; 
+* //see max31329.h for .members and datasheet for alarm format
+* max31329_alrm_t alarm; 
 * uint16_t rtn_val;
 *
 * rtn_val = rtc.set_alarm(alarm, FALSE);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::set_alarm(max31328_alrm_t alarm, bool one_r_two)
+uint16_t Max31329::set_alarm(max31329_alrm_t alarm, bool one_r_two)
 {
     uint8_t data[] = {0,0,0,0,0};
     uint8_t data_length = 0;
@@ -247,7 +247,7 @@ uint16_t Max31328::set_alarm(max31328_alrm_t alarm, bool one_r_two)
     //setting alarm 1 or 2?
     if(one_r_two)
     {
-        data[data_length++] = ALRM1_SECONDS;
+        data[data_length++] = ALM1_SEC;
         
         //config seconds register
         if(alarm.am1)
@@ -304,7 +304,7 @@ uint16_t Max31328::set_alarm(max31328_alrm_t alarm, bool one_r_two)
     }
     else
     {
-        data[data_length++] = ALRM2_MINUTES;
+        data[data_length++] = ALM2_MIN;
         
         //config minutes register
         if(alarm.am2)
@@ -367,7 +367,7 @@ uint16_t Max31328::set_alarm(max31328_alrm_t alarm, bool one_r_two)
 
 
 /**********************************************************//**
-* Set control and status registers of MAX31328
+* Set control and status registers of MAX31329
 *
 * On Entry:
 *     @param[in] data - Struct containing control and status 
@@ -380,16 +380,16 @@ uint16_t Max31328::set_alarm(max31328_alrm_t alarm, bool one_r_two)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15);  
+* Max31329 rtc(D14, D15);  
 * 
 * //do not use 0xAA, see datasheet for appropriate data 
-* max31328_cntl_stat_t data = {0xAA, 0xAA}; 
+* max31329_cntl_stat_t data = {0xAA, 0xAA}; 
 *
 * rtn_val = rtc.set_cntl_stat_reg(data);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::set_cntl_stat_reg(max31328_cntl_stat_t data)
+/*uint16_t Max31329::set_cntl_stat_reg(max31329_cntl_stat_t data)
 {
     uint8_t local_data[] = {0,0,0};
     uint8_t data_length = 0;
@@ -400,11 +400,11 @@ uint16_t Max31328::set_cntl_stat_reg(max31328_cntl_stat_t data)
 
     //users responsibility to make sure data is logical
     return(write(w_adrs,(const char*) local_data, data_length));
-}
+}*/
 
 
 /**********************************************************//**
-* Gets the time on MAX31328
+* Gets the time on MAX31329
 *
 * On Entry:
 *     @param[in] time - pointer to struct for storing time data
@@ -418,17 +418,17 @@ uint16_t Max31328::set_cntl_stat_reg(max31328_cntl_stat_t data)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
 * //time = 12:00:00 AM 12hr mode
-* max31328_time_t time = {12, 0, 0, 0, 1} 
+* max31329_time_t time = {12, 0, 0, 0, 1} 
 * uint16_t rtn_val;
 *
 * rtn_val = rtc.get_time(&time);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::get_time(max31328_time_t* time)
+uint16_t Max31329::get_time(max31329_time_t* time)
 {
     uint16_t rtn_val = 1;
     uint8_t data[3];
@@ -460,7 +460,7 @@ uint16_t Max31328::get_time(max31328_time_t* time)
 
 
 /**********************************************************//**
-* Gets the calendar on MAX31328
+* Gets the calendar on MAX31329
 *
 * On Entry:
 *     @param[in] calendar - pointer to struct for storing 
@@ -475,17 +475,17 @@ uint16_t Max31328::get_time(max31328_time_t* time)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
 * //see datasheet for calendar format
-* max31328_calendar_t calendar = {1, 1, 1, 0}; 
+* max31329_calendar_t calendar = {1, 1, 1, 0}; 
 * uint16_t rtn_val;
 *
 * rtn_val = rtc.get_calendar(&calendar);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::get_calendar(max31328_calendar_t* calendar)
+uint16_t Max31329::get_calendar(max31329_calendar_t* calendar)
 {
     uint16_t rtn_val = 1;
     uint8_t data[4];
@@ -508,7 +508,7 @@ uint16_t Max31328::get_calendar(max31328_calendar_t* calendar)
 
 
 /**********************************************************//**
-* Get either Alarm1 or Alarm2 of MAX31328
+* Get either Alarm1 or Alarm2 of MAX31329
 *
 * On Entry:
 *     @param[in] alarm - pointer to struct for storing alarm 
@@ -525,24 +525,24 @@ uint16_t Max31328::get_calendar(max31328_calendar_t* calendar)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
-* //see max31328.h for .members and datasheet for alarm format
-* max31328_alrm_t alarm; 
+* //see max31329.h for .members and datasheet for alarm format
+* max31329_alrm_t alarm; 
 * uint16_t rtn_val;
 *
 * rtn_val = rtc.get_alarm(&alarm, FALSE);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::get_alarm(max31328_alrm_t* alarm, bool one_r_two)
+uint16_t Max31329::get_alarm(max31329_alrm_t* alarm, bool one_r_two)
 {
     uint16_t rtn_val = 1;
     uint8_t data[4];
     
     if(one_r_two)
     {
-        data[0] = ALRM1_SECONDS;
+        data[0] = ALM1_SEC;
         rtn_val = write(w_adrs, (const char*) data, 1);
         
         if(!rtn_val)
@@ -580,7 +580,7 @@ uint16_t Max31328::get_alarm(max31328_alrm_t* alarm, bool one_r_two)
     }
     else
     {
-        data[0] = ALRM2_MINUTES;
+        data[0] = ALM2_MIN;
         rtn_val = write(w_adrs, (const char*) data, 1);
         
         if(!rtn_val)
@@ -620,7 +620,7 @@ uint16_t Max31328::get_alarm(max31328_alrm_t* alarm, bool one_r_two)
 
 
 /**********************************************************//**
-* Get control and status registers of MAX31328
+* Get control and status registers of MAX31329
 *
 * On Entry:
 *     @param[in] data - pointer to struct for storing control 
@@ -635,16 +635,16 @@ uint16_t Max31328::get_alarm(max31328_alrm_t* alarm, bool one_r_two)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15);  
+* Max31329 rtc(D14, D15);  
 * 
 * //do not use 0xAA, see datasheet for appropriate data 
-* max31328_cntl_stat_t data = {0xAA, 0xAA}; 
+* max31329_cntl_stat_t data = {0xAA, 0xAA}; 
 *
 * rtn_val = rtc.get_cntl_stat_reg(&data);
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::get_cntl_stat_reg(max31328_cntl_stat_t* data)
+/*uint16_t Max31329::get_cntl_stat_reg(max31329_cntl_stat_t* data)
 {
     uint16_t rtn_val = 1;
     uint8_t local_data[2];
@@ -661,11 +661,11 @@ uint16_t Max31328::get_cntl_stat_reg(max31328_cntl_stat_t* data)
     } 
   
     return(rtn_val);
-}
+}*/
 
 
 /**********************************************************//**
-* Get temperature data of MAX31328
+* Get temperature data of MAX31329
 *
 * On Entry:
 *
@@ -676,7 +676,7 @@ uint16_t Max31328::get_cntl_stat_reg(max31328_cntl_stat_t* data)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
 * uint16_t temp; 
 *
@@ -684,7 +684,7 @@ uint16_t Max31328::get_cntl_stat_reg(max31328_cntl_stat_t* data)
 *
 * @endcode
 **************************************************************/
-uint16_t Max31328::get_temperature(void)
+/*uint16_t Max31329::get_temperature(void)
 {
     uint16_t rtn_val = 1;
     uint8_t data[2];
@@ -701,12 +701,12 @@ uint16_t Max31328::get_temperature(void)
     } 
   
     return(rtn_val);    
-}
+}*/
 
 
 /**********************************************************//**
 * Get epoch time based on current RTC time and date.  
-* MAX31328 must be configured and running before this fx is 
+* MAX31329 must be configured and running before this fx is 
 * called
 *
 * On Entry:
@@ -718,7 +718,7 @@ uint16_t Max31328::get_temperature(void)
 * @code
 * 
 * //instantiate rtc object
-* Max31328 rtc(D14, D15); 
+* Max31329 rtc(D14, D15); 
 * 
 * time_t epoch_time; 
 *
@@ -726,14 +726,14 @@ uint16_t Max31328::get_temperature(void)
 *
 * @endcode
 **************************************************************/
-time_t Max31328::get_epoch(void)
+time_t Max31329::get_epoch(void)
 {
     //system vars
     struct tm sys_time;
     
     //RTC vars
-    max31328_time_t rtc_time = {0,0,0,0,0};
-    max31328_calendar_t rtc_calendar = {0,0,0,0};
+    max31329_time_t rtc_time = {0,0,0,0,0};
+    max31329_calendar_t rtc_calendar = {0,0,0,0};
     
     get_calendar(&rtc_calendar);
     get_time(&rtc_time);
@@ -781,7 +781,7 @@ time_t Max31328::get_epoch(void)
 *     @return bcd_result = BCD representation of data
 *
 **************************************************************/
-uint16_t Max31328::uchar_2_bcd(uint8_t data)
+uint16_t Max31329::uchar_2_bcd(uint8_t data)
 {
    uint16_t bcd_result = 0;
    
@@ -810,7 +810,7 @@ uint16_t Max31328::uchar_2_bcd(uint8_t data)
 *     @return rtn_val = integer rep. of BCD
 *
 **************************************************************/
-uint8_t Max31328::bcd_2_uchar(uint8_t bcd)
+uint8_t Max31329::bcd_2_uchar(uint8_t bcd)
 {
     uint8_t rtn_val = 0;
 

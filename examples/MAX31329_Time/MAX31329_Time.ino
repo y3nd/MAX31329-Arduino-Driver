@@ -1,17 +1,16 @@
-#include <max31328.h>
+#include <max31329.h>
 
-
-Max31328 rtc(&Wire);
+Max31329 rtc(&Wire);
 
 void setup() {
   Serial.begin(115200);
 }
 
 void print_current_date_time(){
-  max31328_time_t time;
-  max31328_calendar_t date;
+  max31329_time_t time;
+  max31329_calendar_t date;
 
-  // Get Time and date from MAX31328
+  // Get Time and date from MAX31329
   if(rtc.get_time(&time) || rtc.get_calendar(&date)){
     Serial.println("ERROR: Cannot get time.");
     return;

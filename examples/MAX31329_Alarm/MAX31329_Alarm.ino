@@ -1,9 +1,9 @@
-#include <max31328.h>
+#include <max31329.h>
 
 
-Max31328 rtc(&Wire);
+Max31329 rtc(&Wire);
 
-// INT pin of MAX31328
+// INT pin of MAX31329
 int pinINT = PIN2;
 volatile bool interrupt_occured = false;
 
@@ -16,11 +16,11 @@ void setup() {
   Serial.begin(115200);
   pinMode(pinINT, INPUT);
 
-  // Attach interrupt on INT pin of MAX31328.
+  // Attach interrupt on INT pin of MAX31329.
   attachInterrupt(digitalPinToInterrupt(pinINT), rtc_interrupt_handler, FALLING);
 
   // Configure alarm to fire once per second
-  max31328_alrm_t alarm = {0};
+  max31329_alrm_t alarm = {0};
   alarm.am1 = 1;
   alarm.am2 = 1;
   alarm.am3 = 1;
@@ -28,7 +28,7 @@ void setup() {
   alarm.date = 1;
   alarm.day = 1;
   
-  max31328_cntl_stat_t regs;
+  max31329_cntl_stat_t regs;
   if(rtc.get_cntl_stat_reg(&regs)){
     Serial.println("ERROR: Cannot read control register.");
   }
@@ -45,8 +45,8 @@ void setup() {
 }
 
 void print_current_time(){
-  max31328_time_t time;
-  // Get current time from MAX31328
+  max31329_time_t time;
+  // Get current time from MAX31329
   if(rtc.get_time(&time)){
     Serial.println("ERROR: Cannot get time.");
     return;
@@ -70,7 +70,7 @@ void loop() {
     // Print time
     print_current_time();
     // Clear Interrupt Status
-    max31328_cntl_stat_t regs;
+    max31329_cntl_stat_t regs;
     rtc.get_cntl_stat_reg(&regs);
     regs.status = 0;
     rtc.set_cntl_stat_reg(regs);
