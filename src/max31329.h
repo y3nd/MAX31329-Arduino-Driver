@@ -169,20 +169,14 @@ typedef struct
 
 
 /**
-* max31329_cntl_stat_t - Struct for containing control and status 
+* max31329_config_t - Struct for containing config
 * register data.
-* 
-* Members:
-*
-* - uint8_t control - Binary data for read/write of control register 
-*
-* - uint8_t status  - Binary data  for read/write of status register 
 */
 typedef struct
 {
-    uint8_t control; 
-    uint8_t status; 
-}max31329_cntl_stat_t;
+    uint8_t config1; 
+    uint8_t config2;
+}max31329_config_t;
         
                 
 /******************************************************************//**
@@ -388,33 +382,6 @@ class Max31329
         **************************************************************/
         uint16_t set_alarm(max31329_alrm_t alarm, bool one_r_two);
         
-        
-        /**********************************************************//**
-        * Set control and status registers of MAX31329
-        *
-        * On Entry:
-        *     @param[in] data - Struct containing control and status 
-        *                       register data
-        *
-        * On Exit:
-        *     @return return value = 0 on success, non-0 on failure
-        *
-        * Example:
-        * @code
-        * 
-        * //instantiate rtc object
-        * Max31329 rtc(&Wire); 
-        * 
-        * //do not use 0xAA, see datasheet for appropriate data 
-        * max31329_cntl_stat_t data = {0xAA, 0xAA}; 
-        *
-        * rtn_val = rtc.set_cntl_stat_reg(data);
-        *
-        * @endcode
-        **************************************************************/
-        uint16_t set_cntl_stat_reg(max31329_cntl_stat_t data);
-        
-        
         /**********************************************************//**
         * Gets the time on MAX31329
         *
@@ -528,7 +495,7 @@ class Max31329
         *
         * @endcode
         **************************************************************/
-        uint16_t get_cntl_stat_reg(max31329_cntl_stat_t* data);
+        uint16_t get_config_reg(max31329_config_t* data);
         
         
         /**********************************************************//**
@@ -577,6 +544,10 @@ class Max31329
         * @endcode
         **************************************************************/
         time_t get_epoch(void);
+
+        uint16_t set_config_reg(max31329_config_t config);
+
+        uint16_t reset(void);
         
 };
 #endif /* MAX31329_H*/

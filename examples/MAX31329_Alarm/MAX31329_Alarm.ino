@@ -1,6 +1,5 @@
 #include <max31329.h>
 
-
 Max31329 rtc(&Wire);
 
 // INT pin of MAX31329

@@ -61,8 +61,6 @@ Max31329::Max31329(TwoWire *i2c)
     while (1);
   }
   this->i2c = i2c;
-
-  this->i2c->begin();
 }
 
 int Max31329::write(int address, const char *data, int length){
@@ -70,7 +68,7 @@ int Max31329::write(int address, const char *data, int length){
 
   i2c->beginTransmission(address);
   i2c->write((const uint8_t*)data,length);
-  ret = i2c->endTransmission();
+  ret = i2c->endTransmission(false);
 
   if (ret != 0) {
     pr_err("i2c write failed");
@@ -618,90 +616,65 @@ uint16_t Max31329::get_alarm(max31329_alrm_t* alarm, bool one_r_two)
     return(rtn_val);
 }
 
+uint16_t Max31329::set_config_reg(max31329_config_t config)
+{
+    uint16_t rtn_val = 1;
+    uint8_t local_data[3];
+    
+    local_data[0] = RTC_CONFIG1;
+    local_data[1] = config.config1;
+    local_data[2] = config.config2;
+
+    return(write(w_adrs, (const char*) local_data, 3));
+}
+
 
 /**********************************************************//**
-* Get control and status registers of MAX31329
+* Get config registers of MAX31329
 *
 * On Entry:
-*     @param[in] data - pointer to struct for storing control 
-*                       and status register data
+*     @param[in] data - pointer to struct for storing config register data
 *
 * On Exit:
-*     @param[out] data - contains control and status registers
-*                        data
+*     @param[out] data - contains config registers
+
 *     @return return value = 0 on success, non-0 on failure
-*
-* Example:
-* @code
-* 
-* //instantiate rtc object
-* Max31329 rtc(D14, D15);  
-* 
-* //do not use 0xAA, see datasheet for appropriate data 
-* max31329_cntl_stat_t data = {0xAA, 0xAA}; 
-*
-* rtn_val = rtc.get_cntl_stat_reg(&data);
-*
-* @endcode
 **************************************************************/
-/*uint16_t Max31329::get_cntl_stat_reg(max31329_cntl_stat_t* data)
+uint16_t Max31329::get_config_reg(max31329_config_t* data)
 {
     uint16_t rtn_val = 1;
     uint8_t local_data[2];
     
-    local_data[0] = CONTROL;
+    local_data[0] = RTC_CONFIG1;
     rtn_val = write(w_adrs, (const char*) local_data, 1);
     
     if(!rtn_val)
     {
         rtn_val = read(r_adrs,(char *) local_data, 2);
         
-        data->control = local_data[0];
-        data->status = local_data[1];
-    } 
+        data->config1 = local_data[0];
+        data->config2 = local_data[1];
+    }
   
     return(rtn_val);
-}*/
+}
 
-
-/**********************************************************//**
-* Get temperature data of MAX31329
-*
-* On Entry:
-*
-* On Exit:
-*     @return return value = raw temperature data
-*
-* Example:
-* @code
-* 
-* //instantiate rtc object
-* Max31329 rtc(D14, D15); 
-* 
-* uint16_t temp; 
-*
-* temp = rtc.get_temperature();
-*
-* @endcode
-**************************************************************/
-/*uint16_t Max31329::get_temperature(void)
+uint16_t Max31329::reset()
 {
     uint16_t rtn_val = 1;
     uint8_t data[2];
     
-    data[0] = MSB_TEMP;
-    rtn_val = write(w_adrs, (const char*) data, 1);
+    data[0] = RTC_RESET;
+    data[1] = 0x01;
+    rtn_val = write(w_adrs, (const char*) data, 2);
+
+    delay(1);
+
+    data[1] = 0x00;
+    rtn_val = write(w_adrs, (const char*) data, 2);
     
-    if(!rtn_val)
-    {
-        read(r_adrs,(char *) data, 2);
-        
-        rtn_val = data[0] << 8;
-        rtn_val |= data[1];
-    } 
-  
-    return(rtn_val);    
-}*/
+    return(rtn_val);
+}
 
 
 /**********************************************************//**

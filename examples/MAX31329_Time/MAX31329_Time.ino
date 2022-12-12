@@ -31,6 +31,13 @@ void print_current_date_time(){
   Serial.print(time.minutes);
   Serial.print(":");
   Serial.println(time.seconds);
+
+  max31329_config_t config_regs;
+  
+
+
+  Serial.print("RTC Config: ");
+  Serial.println();
 }
 
 void loop() {
