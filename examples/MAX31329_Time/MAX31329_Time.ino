@@ -62,7 +62,7 @@ void print_current_date_time(){
   // Print date
   Serial.print(date.month);
   Serial.print("/");
-  Serial.print(date.day);
+  Serial.print(date.date);
   Serial.print("/");
   Serial.print(date.year + 2000);
   Serial.print(" - ");
